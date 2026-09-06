@@ -120,6 +120,8 @@ dl.facts .flag dd{color:var(--accent);font-weight:500;}
 .alts .alt-li .hs{width:22px;height:22px;flex:0 0 auto;border-radius:50%;object-fit:cover;object-position:top center;background:var(--surface-2);}
 .alts .alt-li .tl-sm{width:13px;height:13px;object-fit:contain;vertical-align:-2px;margin-right:2px;}
 .rec .meta .tl{width:15px;height:15px;object-fit:contain;vertical-align:-3px;margin-right:3px;}
+.teamcell{font-family:var(--font-mono);font-size:.78rem;color:var(--muted);white-space:nowrap;}
+.teamcell .tl-b{width:16px;height:16px;object-fit:contain;vertical-align:-4px;margin-right:4px;}
 .roster-chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px;padding-top:12px;border-top:1px solid var(--line);}
 .rc{font-family:var(--font-mono);font-size:.7rem;padding:3px 9px;border-radius:6px;border:1px solid var(--line-strong);color:var(--muted);white-space:nowrap;}
 .rc b{color:var(--ink);font-weight:600;}
@@ -191,7 +193,7 @@ footer{margin-top:56px;padding-top:18px;border-top:2px solid var(--ink);font-fam
 @media print{
   :root,:root[data-theme]{--bg:#fff;--surface:#fff;--surface-2:#f3f0ec;--ink:#000;--muted:#333;--faint:#555;--line:#bbb;--line-strong:#888;--shadow:none;color-scheme:light;}
   body{font-size:10.5pt;} .wrap{max-width:none;padding:0;}
-  .filterbar,#q,.chips,.hidetog,.assist-controls,.assist .setup,.howto,.pl .hs,.rec-hs,.rec .meta .tl,.alts .alt-li .hs,.alts .tl-sm{display:none!important;}
+  .filterbar,#q,.chips,.hidetog,.assist-controls,.assist .setup,.howto,.pl .hs,.rec-hs,.rec .meta .tl,.alts .alt-li .hs,.alts .tl-sm,.teamcell .tl-b{display:none!important;}
   #assist{border-color:#888;} .tablescroll{overflow:visible;box-shadow:none;}
   section{margin-top:22px;break-inside:avoid;} tbody tr,.rounds .round,dl.facts>div,.posblock{break-inside:avoid;} h2{break-after:avoid;}
 }
@@ -296,7 +298,7 @@ footer{margin-top:56px;padding-top:18px;border-top:2px solid var(--ink);font-fam
     </div>
     <div class="tablescroll">
       <table class="board-table">
-        <thead><tr><th>#</th><th>Jugador</th><th>Pos</th><th>Tier</th><th>Bye</th><th>Valor</th><th>ADP</th></tr></thead>
+        <thead><tr><th>#</th><th>Jugador</th><th>Pos</th><th>Eq</th><th>Tier</th><th>Bye</th><th>Valor</th><th>ADP</th></tr></thead>
         <tbody id="overall-body"></tbody>
       </table>
     </div>
@@ -505,7 +507,7 @@ footer{margin-top:56px;padding-top:18px;border-top:2px solid var(--ink);font-fam
   DATA.board.forEach(function(p){
     while(p.rank>nextDiv && nextDiv<N_TEAMS*DRAFTABLE_ROUNDS){
       var dtr=el("tr","rnd-div"); var dtd=el("td",null,"Ronda "+(nextDiv/N_TEAMS)+" · hasta el pick "+nextDiv);
-      dtd.colSpan=7; dtr.appendChild(dtd); tbody.appendChild(dtr); nextDiv+=N_TEAMS;
+      dtd.colSpan=8; dtr.appendChild(dtd); tbody.appendChild(dtr); nextDiv+=N_TEAMS;
     }
     var tr=el("tr"); tr.dataset.name=p.name; if(p.excl) tr.classList.add("excl");
     tr.appendChild(el("td","rk num",p.rank));
@@ -515,6 +517,8 @@ footer{margin-top:56px;padding-top:18px;border-top:2px solid var(--ink);font-fam
     tr.appendChild(pl);
     var pd=el("td"); var ps=el("span","pos",p.pos); ps.setAttribute("data-pos",p.pos);
     pd.appendChild(ps); pd.appendChild(el("span","posrank"," "+(p.pos_rank!=null?p.pos_rank:"—"))); tr.appendChild(pd);
+    var tc2=el("td","teamcell"); var tlb=teamLogoImg(p.team,"tl-b"); if(tlb) tc2.appendChild(tlb);
+    tc2.appendChild(document.createTextNode(p.team||"—")); tr.appendChild(tc2);
     var td=el("td");
     if(p.tier!=null){var tc=el("span","tierchip","T"+p.tier);tc.setAttribute("data-pos",p.pos);td.appendChild(tc);}
     else td.textContent="—";
