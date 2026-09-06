@@ -115,6 +115,11 @@ dl.facts .flag dd{color:var(--accent);font-weight:500;}
 .pl .hs{width:22px;height:22px;flex:0 0 auto;border-radius:50%;object-fit:cover;object-position:top center;background:var(--surface-2);margin-right:7px;vertical-align:-7px;}
 .alts{list-style:none;margin:10px 0 0;padding:10px 0 0;border-top:1px solid var(--line);display:grid;gap:5px;}
 .alts li{font-size:.86rem;} .alts .p{font-family:var(--font-mono);font-size:.72rem;color:var(--faint);}
+.alts .alt-li{display:flex;align-items:center;gap:7px;flex-wrap:wrap;}
+.alts .alt-li>b{font-weight:600;}
+.alts .alt-li .hs{width:22px;height:22px;flex:0 0 auto;border-radius:50%;object-fit:cover;object-position:top center;background:var(--surface-2);}
+.alts .alt-li .tl-sm{width:13px;height:13px;object-fit:contain;vertical-align:-2px;margin-right:2px;}
+.rec .meta .tl{width:15px;height:15px;object-fit:contain;vertical-align:-3px;margin-right:3px;}
 .roster-chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px;padding-top:12px;border-top:1px solid var(--line);}
 .rc{font-family:var(--font-mono);font-size:.7rem;padding:3px 9px;border-radius:6px;border:1px solid var(--line-strong);color:var(--muted);white-space:nowrap;}
 .rc b{color:var(--ink);font-weight:600;}
@@ -186,7 +191,7 @@ footer{margin-top:56px;padding-top:18px;border-top:2px solid var(--ink);font-fam
 @media print{
   :root,:root[data-theme]{--bg:#fff;--surface:#fff;--surface-2:#f3f0ec;--ink:#000;--muted:#333;--faint:#555;--line:#bbb;--line-strong:#888;--shadow:none;color-scheme:light;}
   body{font-size:10.5pt;} .wrap{max-width:none;padding:0;}
-  .filterbar,#q,.chips,.hidetog,.assist-controls,.assist .setup,.howto,.pl .hs,.rec-hs{display:none!important;}
+  .filterbar,#q,.chips,.hidetog,.assist-controls,.assist .setup,.howto,.pl .hs,.rec-hs,.rec .meta .tl,.alts .alt-li .hs,.alts .tl-sm{display:none!important;}
   #assist{border-color:#888;} .tablescroll{overflow:visible;box-shadow:none;}
   section{margin-top:22px;break-inside:avoid;} tbody tr,.rounds .round,dl.facts>div,.posblock{break-inside:avoid;} h2{break-after:avoid;}
 }
@@ -317,17 +322,17 @@ footer{margin-top:56px;padding-top:18px;border-top:2px solid var(--ink);font-fam
   function f1(n){return n==null?"—":Number(n).toFixed(1);}
   function r0(n){return n==null?"—":Math.round(n);}
   var _LOGO={WAS:"wsh"};
+  function teamLogoUrl(t){ if(!t) return null; t=(_LOGO[t]||t).toLowerCase();
+    return "https://a.espncdn.com/i/teamlogos/nfl/500/"+t+".png"; }
   function photoUrl(p){
-    if(p.pos==="DST"){ var t=(p.team||""); t=(_LOGO[t]||t).toLowerCase();
-      return t?("https://a.espncdn.com/i/teamlogos/nfl/500/"+t+".png"):null; }
+    if(p.pos==="DST") return teamLogoUrl(p.team);
     return p.espn?("https://a.espncdn.com/i/headshots/nfl/players/full/"+p.espn+".png"):null;
   }
-  function photoImg(p,cls){
-    var u=photoUrl(p); if(!u) return null;
+  function _img(u,cls){ if(!u) return null;
     var im=el("img",cls); im.src=u; im.alt=""; im.loading="lazy";
-    im.onerror=function(){this.remove();};
-    return im;
-  }
+    im.onerror=function(){this.remove();}; return im; }
+  function photoImg(p,cls){ return _img(photoUrl(p),cls); }
+  function teamLogoImg(t,cls){ return _img(teamLogoUrl(t),cls); }
 
   /* ---------- math (ported from ffs.draft.availability) ---------- */
   function erf(x){var s=x<0?-1:1;x=Math.abs(x);var t=1/(1+0.3275911*x);
@@ -588,7 +593,11 @@ footer{margin-top:56px;padding-top:18px;border-top:2px solid var(--ink);font-fam
     var him=photoImg(top.best,"rec-hs"); if(him) head.appendChild(him);
     var txt=el("div");
     txt.appendChild(el("span","big",top.best.name));
-    txt.appendChild(el("span","meta",POS_SHORT[top.pos]+(top.best.pos_rank!=null?(" "+top.best.pos_rank):"")+" · "+(top.best.team||"—")+" · bye S"+(top.best.bye||"?")+" · valor "+r0(top.best.vorp)));
+    var meta=el("span","meta");
+    meta.appendChild(document.createTextNode(POS_SHORT[top.pos]+(top.best.pos_rank!=null?(" "+top.best.pos_rank):"")+" · "));
+    var mtl=teamLogoImg(top.best.team,"tl"); if(mtl) meta.appendChild(mtl);
+    meta.appendChild(document.createTextNode((top.best.team||"—")+" · bye S"+(top.best.bye||"?")+" · valor "+r0(top.best.vorp)));
+    txt.appendChild(meta);
     head.appendChild(txt);
     if(top.best.inj && top.best.inj!=="Questionable"){head.appendChild(el("span","flag",top.best.inj));}
     elRec.appendChild(head);
@@ -598,10 +607,16 @@ footer{margin-top:56px;padding-top:18px;border-top:2px solid var(--ink);font-fam
     if(alts.length){
       elAlts.hidden=false; elAlts.appendChild(el("li","p","Otras posiciones:"));
       alts.forEach(function(r){
-        var li=el("li");
-        li.innerHTML="<b>"+r.best.name+"</b> <span class='p'>"+POS_SHORT[r.pos]+(r.best.pos_rank!=null?(" "+r.best.pos_rank):"")+" · "+(r.best.team||"—")
-          +" · "+(r.need>=1?"llena titular":(r.need>=P.need_flex_open?"lugar libre RB/WR":(r.need>=P.need_bench_open?"banca":"ya cubierto")))
-          +" · valor "+r0(r.vorp_now)+(r.vona>=10?" · conviene pronto":"")+"</span>";
+        var li=el("li","alt-li");
+        var hs=photoImg(r.best,"hs"); if(hs) li.appendChild(hs);
+        li.appendChild(el("b",null,r.best.name));
+        var sp=el("span","p");
+        sp.appendChild(document.createTextNode(" "+POS_SHORT[r.pos]+(r.best.pos_rank!=null?(" "+r.best.pos_rank):"")+" · "));
+        var tl=teamLogoImg(r.best.team,"tl-sm"); if(tl) sp.appendChild(tl);
+        sp.appendChild(document.createTextNode((r.best.team||"—")+" · "
+          +(r.need>=1?"llena titular":(r.need>=P.need_flex_open?"lugar libre RB/WR":(r.need>=P.need_bench_open?"banca":"ya cubierto")))
+          +" · valor "+r0(r.vorp_now)+(r.vona>=10?" · conviene pronto":"")));
+        li.appendChild(sp);
         elAlts.appendChild(li);
       });
     } else elAlts.hidden=true;
