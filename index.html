@@ -617,7 +617,7 @@ footer{margin-top:56px;padding-top:18px;border-top:2px solid var(--ink);font-fam
     // cuando las dos primeras posiciones están parejas en score, manda el mejor
     // jugador (VOR más alto) — equivalente al desempate (score, need x VORP) del
     // optimizador de Tona; evita irse de más tras la escasez pura.
-    if(rows.length>=2 && scarce && rows[1].score>=rows[0].score*0.85 && rows[1].vNow>rows[0].vNow+8){
+    if(rows.length>=2 && scarce && rows[1].score>=rows[0].score*0.75 && rows[1].vNow>rows[0].vNow+8){
       var t=rows[0]; rows[0]=rows[1]; rows[1]=t;
     }
     return {rows:rows,curOverall:curOverall,isMyTurn:isMyTurn,myNext:myNext,untilMine:untilMine,
